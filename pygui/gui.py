@@ -156,18 +156,27 @@ class Frame:
         self.color = color
         self.visible = visible
         self.width = width
+    def handle_event(self, event):
+        pass
+    def update(self):
+        pass
     def draw(self, screen):
         if self.visible:
             tetragon(self.rect, self.color, self.width, 5,screen)
 class Line:
-    def __init__(self, rect,visible = True, width = 5,color = constant.COLOR_INACTIVE):
-        self.rect = rect
+    def __init__(self, first_rect,end_rect,visible = True, width = 5,color = constant.COLOR_INACTIVE):
+        self.f_rect = first_rect
+        self.e_rect = end_rect
         self.color = color
         self.visible = visible
         self.width = width
+    def handle_event(self, event):
+        pass
+    def update(self):
+        pass
     def draw(self, screen):
         if self.visible:
-            pg.draw.line(screen, self.color, self.rect, self.width)
+            pg.draw.line(screen, self.color, (self.f_rect.x,self.f_rect.y),(self.e_rect.x, self.e_rect.y), self.width)
 class ButtonImageSwitching: # 画像のボタン
     def __init__(self, rect , visible , before_clicked_image, after_clicked_image, on_cursor_image):
         self.rect = rect
