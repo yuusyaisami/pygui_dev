@@ -159,6 +159,15 @@ class Frame:
     def draw(self, screen):
         if self.visible:
             tetragon(self.rect, self.color, self.width, 5,screen)
+class Line:
+    def __init__(self, rect,visible = True, width = 5,color = constant.COLOR_INACTIVE):
+        self.rect = rect
+        self.color = color
+        self.visible = visible
+        self.width = width
+    def draw(self, screen):
+        if self.visible:
+            pg.draw.line(screen, self.color, self.rect, self.width)
 class ButtonImageSwitching: # 画像のボタン
     def __init__(self, rect , visible , before_clicked_image, after_clicked_image, on_cursor_image):
         self.rect = rect
