@@ -289,7 +289,8 @@ class InputBox:
         self.color_on_mouse = color_on_mouse
         self.text = text
         self.active = False
-        self.clicked = text
+        self.clicked = False
+        self.clicked_text = text
         self.clear = clear_text
         self.Font = font
         self.visible = visible
@@ -315,7 +316,8 @@ class InputBox:
             if event.type == pg.KEYDOWN:
                 if self.active:
                     if event.key == pg.K_RETURN:
-                        self.clicked = self.text
+                        self.clicked = True
+                        self.clicked_text = self.text
                         if self.clear:
                             self.text = ""
                     elif event.key == pg.K_BACKSPACE:
@@ -333,6 +335,7 @@ class InputBox:
         if self.visible:
             # テキストを吹き飛ばす。
             screen.blit(constant.FONT.render(self.text, True, self.color), (self.rect.x+5, self.rect.y+5))
+            self.clicked = False
             # レクトを吹き飛ばす。
             pg.draw.rect(screen, self.color, self.rect, 2)
 class Text:
@@ -412,7 +415,7 @@ def tetragon(rect, color, width, radius, screen):
 # clicked_indexは選択されたインデックスが入ります、処理をもう一度通すと、-1(選択されていない)になります
 class CombineBox:
     def __init__(self, rect, main_name, element_names, font = constant.FONT, visible = True, clicked = False, size = 20,elementwidth = 100, color_inactive = constant.COLOR_INACTIVE, color_active = constant.COLOR_ACTIVE, color_on_mouse = constant.COLOR_ACTIVE) -> None:
-        self.rect = rect
+        self.rect = rect 
         self.main_name = main_name
         self.elements = element_names
         self.font = font
@@ -481,7 +484,8 @@ class Menubar:
         self.font = font
         self.visible = visible
         self.clicked = clicked
-        self.clicked_index = -1
+        self.clicked_index = -1 # クリックされたインデックスを入れる、処理が再び入ると-1に戻る
+        self.clicked_name = "" # クリックされた要素の名前を入れる、処理が再び入ると""に戻る
         self.color = constant.COLOR_INACTIVE
         self.color_inactive = color_inactive
         self.color_active = color_active
@@ -521,13 +525,14 @@ class Menubar:
                     self.count_on_mouse = 0
     def update(self):
         if self.visible:
-            if self.Boxvisible:
-                for object in self.objects:
-                    object.update()
+            for object in self.objects:
+                object.update()
             self.clicked_index = -1
+            self.clicked_name = ""
             for i in range(len(self.objects)):
                 if self.objects[i].clicked == True:
                     self.clicked_index = i
+                    self.clicked_name = self.elements[i]
                     
 
     def draw(self, screen):
