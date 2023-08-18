@@ -397,20 +397,21 @@ def circle(rect, radius ,first_rad , end_rad, color ,screen, points = 30, width 
 def tetragon(rect, color, width, radius, screen):
     if width == 0:
         pg.draw.rect(screen, color, pg.Rect(rect.x, rect.y + radius, rect.w, rect.h - radius * 2), width) # 横
-        pg.draw.rect(screen, color, pg.Rect(rect.x + radius, rect.y, rect.w - radius * 2, rect.h), width) # 横
-        circle(pg.Rect(rect.x + radius,rect.y + radius,rect.w,rect.h), radius, 0,np.pi * 2,color, screen,100, width)
-        circle(pg.Rect(rect.x - radius + rect.w,rect.y + radius ,rect.w,rect.h), radius, 0,np.pi * 2- np.pi /32 ,color, screen,100, width)
-        circle(pg.Rect(rect.x - radius + rect.w,rect.y + rect.h - radius ,rect.w,rect.h), radius, 0, np.pi * 2 - np.pi /32,color, screen,100, width)
-        circle(pg.Rect(rect.x + radius,rect.y + rect.h - radius ,rect.w,rect.h), radius, 0, np.pi * 2,color, screen,100, width)
+        pg.draw.rect(screen, color, pg.Rect(rect.x + radius, rect.y, rect.w - radius - radius, rect.h), width) # 横
+
+        circle(pg.Rect(rect.x + radius,rect.y + radius,rect.w,rect.h), radius, np.pi /32,np.pi * 2,color, screen,100, 0)
+        circle(pg.Rect(rect.x - radius + rect.w ,rect.y + radius ,rect.w,rect.h), radius, np.pi /32,np.pi * 2 - np.pi /32 ,color, screen,100, 0)
+        circle(pg.Rect(rect.x - radius + rect.w,rect.y + rect.h - radius ,rect.w - 2,rect.h), radius, np.pi /32, np.pi * 2 - np.pi /32,color, screen,100, 0)
+        circle(pg.Rect(rect.x + radius,rect.y + rect.h - radius ,rect.w,rect.h), radius, np.pi /32, np.pi * 2,color, screen,100, 0)
     else:
         pg.draw.line(screen, color, (rect.x + radius, rect.y), (rect.x + rect.w - radius, rect.y), width)
         pg.draw.line(screen, color, (rect.x + rect.w, rect.y + radius), (rect.x + rect.w, rect.y + rect.h - radius), width)
-        pg.draw.line(screen, color, (rect.x + radius, rect.y + rect.h), (rect.x + rect.w - radius, rect.y + rect.h), width)
+        pg.draw.line(screen, color, (rect.x + radius - 2, rect.y + rect.h), (rect.x + rect.w - radius , rect.y + rect.h), width)
         pg.draw.line(screen, color, (rect.x, rect.y + radius), (rect.x, rect.y + rect.h - radius), width)
         circle(pg.Rect(rect.x + radius,rect.y + radius,rect.w,rect.h), radius, np.pi, np.pi + np.pi / 2,color, screen,100, width)
         circle(pg.Rect(rect.x - radius + rect.w + 1,rect.y + radius ,rect.w,rect.h), radius, np.pi + np.pi / 2,np.pi + np.pi - np.pi /32,color, screen,100, width)
-        circle(pg.Rect(rect.x - radius + rect.w + 1,rect.y + rect.h - radius + 1 ,rect.w,rect.h), radius, 0, np.pi / 2,color, screen,100, width)
-        circle(pg.Rect(rect.x + radius,rect.y + rect.h - radius + 1 ,rect.w,rect.h), radius, np.pi / 2, np.pi,color, screen,100, width)
+        circle(pg.Rect(rect.x - radius + rect.w + 1,rect.y + rect.h - radius + 1 ,rect.w,rect.h), radius, np.pi /32, np.pi / 2,color, screen,100, width)
+        circle(pg.Rect(rect.x + radius,rect.y + rect.h - radius + 1 ,rect.w,rect.h), radius, np.pi / 2 - np.pi /32, np.pi,color, screen,100, width)
 # elements は 要素の名前を入れてください
 # clicked_indexは選択されたインデックスが入ります、処理をもう一度通すと、-1(選択されていない)になります
 class CombineBox:
@@ -547,9 +548,83 @@ class Menubar:
             if not self.NoFrame:
                 tetragon(self.rect, self.color, 2, 5,screen)
             screen.blit(self.font.render(self.main_name, True, self.color), (self.rect.x+5, self.rect.y+5))
+class RowText:
+    def __init__(self, rect, element_names, font = constant.FONT, visible = True, clicked = False, size = 20,elementwidth = 100, color_inactive = constant.COLOR_INACTIVE, color_active = constant.COLOR_ACTIVE, color_on_mouse = constant.COLOR_ACTIVE, NoFrame = False, NoOutLine = True) -> None:
+        self.rect = rect
+        self.elements = element_names
+        self.font = font
+        self.visible = visible
+        self.clicked = clicked
+        self.clicked_index = -1 # クリックされたインデックスを入れる、処理が再び入ると-1に戻る
+        self.clicked_name = "" # クリックされた要素の名前を入れる、処理が再び入ると""に戻る
+        self.color = constant.COLOR_INACTIVE
+        self.color_inactive = color_inactive
+        self.color_active = color_active
+        self.color_on_mouse = color_on_mouse
+        self.NoFrame = NoFrame
+        self.NoOutLine = NoOutLine
+        self.objects = []
+        for i in range(len(self.elements)):
+            self.objects.append(Button(pg.Rect(rect.x, rect.y + size * i, elementwidth , rect.h),self.elements[i], self.font, True,color_inactive,color_active,color_on_mouse,NoFrame))
+    def handle_event(self, event):
+        if self.visible:
+            for object in self.objects:
+                    object.handle_event(event)
+    def update(self):
+        if self.visible:
+            for object in self.objects:
+                object.update()
+            self.clicked_index = -1
+            self.clicked_name = ""
+            for i in range(len(self.objects)):
+                if self.objects[i].clicked == True:
+                    self.clicked_index = i
+                    self.clicked_name = self.elements[i]
+    def draw(self, screen):
+        if self.visible:
+            for object in self.objects:
+                object.draw(screen)
+            if not self.NoFrame:
+                tetragon(self.rect, self.color, 2, 5,screen)
+class ColumnText:
+    def __init__(self, rect, element_names, font = constant.FONT, visible = True, clicked = False, space = 20,elementwidth = 100, color_inactive = constant.COLOR_INACTIVE, color_active = constant.COLOR_ACTIVE, color_on_mouse = constant.COLOR_ACTIVE, NoFrame = False, NoOutLine = True) -> None:
+        self.rect = rect
+        self.elements = element_names
+        self.font = font
+        self.visible = visible
+        self.clicked = clicked
+        self.clicked_index = -1 # クリックされたインデックスを入れる、処理が再び入ると-1に戻る
+        self.clicked_name = "" # クリックされた要素の名前を入れる、処理が再び入ると""に戻る
+        self.color = constant.COLOR_INACTIVE
+        self.color_inactive = color_inactive
+        self.color_active = color_active
+        self.color_on_mouse = color_on_mouse
+        self.NoFrame = NoFrame
+        self.NoOutLine = NoOutLine
+        self.objects = []
+        for i in range(len(self.elements)):
+            self.objects.append(Button(pg.Rect(rect.x + elementwidth * i + space * i, rect.y, elementwidth , rect.h),self.elements[i], self.font, True,color_inactive,color_active,color_on_mouse,NoFrame))
+    def handle_event(self, event):
+        if self.visible:
+            for object in self.objects:
+                    object.handle_event(event)
+    def update(self):
+        if self.visible:
+            for object in self.objects:
+                object.update()
+            self.clicked_index = -1
+            self.clicked_name = ""
+            for i in range(len(self.objects)):
+                if self.objects[i].clicked == True:
+                    self.clicked_index = i
+                    self.clicked_name = self.elements[i]
+    def draw(self, screen):
+        if self.visible:
+            for object in self.objects:
+                object.draw(screen)
+            if not self.NoOutLine:
+                tetragon(self.rect, self.color, 2, 5,screen)
 
-    
-    
 
 if __name__ == '__main__':
     pg.init()
