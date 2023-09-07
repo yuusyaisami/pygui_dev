@@ -80,7 +80,7 @@ class SaveText:
 
     # 開発者用
     def clear(self,path):
-        with open(path, 'w') as file:
+        with open(path, 'w',  encoding='utf-8') as file:
             file.write('')  # ファイルの内容を削除
     def textfile_data_list(self,path):
         lines = []

@@ -498,10 +498,19 @@ class Menubar:
         self.frame = Frame(pg.Rect(rect.x - 5,rect.y - 5 + size ,elementwidth + 10, size * len(self.elements)),True,0)
         self.outframe = Frame(pg.Rect(rect.x - 5,rect.y - 5 + size ,elementwidth + 10, size * len(self.elements)),True,3, self.color_inactive)
         self.objects = []
+        self.cancelrightclicked = False
+        self.countflag = False
+        self.count = 0
         for i in range(len(self.elements)):
             self.objects.append(Button(pg.Rect(rect.x, rect.y + size * (i + 1), elementwidth , rect.h),self.elements[i], self.font, True,color_inactive,color_active,color_on_mouse,NoFrame))
     def handle_event(self, event):
         if self.visible:
+            if self.countflag:
+                self.count += 1
+                if self.count > 3:
+                    self.count = 0
+                    self.cancelrightclicked = False
+                    self.countflag = False
             if self.Boxvisible:
                 for object in self.objects:
                         object.handle_event(event)
@@ -510,10 +519,13 @@ class Menubar:
                     self.Boxvisible = not self.Boxvisible
                     self.count_on_mouse = 0
                     if self.Boxvisible:
+                        self.cancelrightclicked = True
                         self.color = self.color_active
                     else:
+                        self.countflag = True
                         self.color = self.color_inactive
                 else :
+                    self.countflag = True
                     self.count_on_mouse = 0
                     self.Boxvisible = False
                     self.color = self.color_inactive
@@ -563,9 +575,11 @@ class RowText:
         self.color_on_mouse = color_on_mouse
         self.NoFrame = NoFrame
         self.NoOutLine = NoOutLine
+        self.size = size
         self.objects = []
         for i in range(len(self.elements)):
             self.objects.append(Button(pg.Rect(rect.x, rect.y + size * i, elementwidth , rect.h),self.elements[i], self.font, True,color_inactive,color_active,color_on_mouse,NoFrame))
+        self.rect.h = len(self.elements) * size
     def handle_event(self, event):
         if self.visible:
             for object in self.objects:
@@ -582,9 +596,10 @@ class RowText:
                     self.clicked_name = self.elements[i]
     def draw(self, screen):
         if self.visible:
+            pg.draw.rect(screen, pg.Color(30,30,30), pg.Rect(self.rect.x, self.rect.y , self.rect.w, self.rect.h ), 0) # 横
             for object in self.objects:
                 object.draw(screen)
-            if not self.NoFrame:
+            if not self.NoOutLine:
                 tetragon(self.rect, self.color, 2, 5,screen)
 class ColumnText:
     def __init__(self, rect, element_names, font = constant.FONT, visible = True, clicked = False, space = 20,elementwidth = 100, color_inactive = constant.COLOR_INACTIVE, color_active = constant.COLOR_ACTIVE, color_on_mouse = constant.COLOR_ACTIVE, NoFrame = False, NoOutLine = True) -> None:
@@ -624,7 +639,48 @@ class ColumnText:
                 object.draw(screen)
             if not self.NoOutLine:
                 tetragon(self.rect, self.color, 2, 5,screen)
+class Texts:
+    def __init__(self, rect, elements, font, color, visible, space, width):
+        self.rect = rect
+        self.elements = elements
+        self.texts = []
+        self.font = font
+        self.color = color
+        self.visible = visible
+        self.width = width
+        for i in range(len(elements)):
+            self.texts.append(Text(pg.Rect(self.rect.x, self.rect.y + self.font.size("1fekv:")[1] * i + space * i, width, self.font.size("1fekv:")[1]),elements[i],self.font, True, self.color))
+    def update(self):
+        for te in self.texts:
+            te.update()
+    def draw(self, screen):
+        for te in self.texts:
+            te.draw(screen)
+class InputBoxAndText:
+    def __init__(self, rect, text, font, color_inactive, color_active, visible, auto_rect = True,inputbox_rect = pg.Rect(0,0,0,0), inputbox_text = ""):
+        self.rect = rect
+        self.font = font
+        self.color = color_inactive
+        self.color_inactive = color_inactive
+        self.color_active = color_active
 
+        self.visible = visible
+        self.auto_rect = auto_rect
+        if auto_rect:
+            self.inputbox_rect = pg.Rect(font.size(text)[0] + self.rect.x, self.rect.y, self.rect.w, self.rect.h)
+        else:
+            self.inputbox_rect = inputbox_rect
+        self.inputbox = InputBox(self.inputbox_rect, inputbox_text, self.font, visible, False, self.color, self.color_active, self.color_inactive)
+        self.text = Text(rect, text, font, True, self.color)
+    def handle_event(self, event):
+        self.inputbox.handle_event(event)
+
+    def update(self):
+        self.inputbox.update()
+        self.text.update()
+    def draw(self, screen):
+        self.inputbox.draw(screen)
+        self.text.draw(screen)
 
 if __name__ == '__main__':
     pg.init()
